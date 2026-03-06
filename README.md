@@ -1,8 +1,8 @@
-# Python Template
+# Python UVTemplate
 
 A modern Python project template with:
 
-- `src/python_template` layout for clean imports
+- `src/app` layout for clean imports
 - `uv` for dependency and environment management
 - Pre-commit hooks (Black, Ruff, trailing-whitespace)
 - Logging setup with `configs/logging_config.ini` and `logs/` folder
@@ -24,7 +24,7 @@ name = "my-new-project"
 ```
 
 3. Run `uv sync` to regenerate the lock file.
-4. Update `src/python_template/` package name if desired (imports will match automatically).
+4. Update `src/app/` package name if desired (also update imports if necessary).
 5. Adjust logging, scripts, and configs for your new project.
 
 ---

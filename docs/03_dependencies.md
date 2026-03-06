@@ -23,7 +23,7 @@ Example:
 
 ```toml
 [project]
-name = "python-template"
+name = "python-uv-template"
 version = "0.1.0"
 
 dependencies = [
@@ -112,7 +112,7 @@ Examples:
 Run application:
 
 ```bash
-uv run python -m python_template.main
+uv run python -m app.main
 ```
 
 Run tests:

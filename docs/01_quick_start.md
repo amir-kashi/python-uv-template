@@ -9,7 +9,7 @@ If you want a production-ready deployment, see the [Docker guide](05_docker.md).
 
 ```bash
 git clone <repo-url>
-cd python-template
+cd python-uv-template
 ````
 
 ---
@@ -45,12 +45,12 @@ This installs **both production and development dependencies** defined in `pypro
 > For **Streamlit** app, use:
 >
 > ```bash
-> uv run streamlit run src/python_template/main.py
+> uv run streamlit run src/app/main.py
 > ```
 
 > For **normal Python script**, use:
 > ```bash
-> uv run python -m python_template.main
+> uv run python -m app.main
 > ```
 
 * `uv run` ensures the correct Python environment is used automatically.

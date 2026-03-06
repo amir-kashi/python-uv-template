@@ -1,4 +1,4 @@
-from python_template.utils.helpers import adder
+from app.utils.helpers import adder
 
 
 def test_adder():

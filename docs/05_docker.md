@@ -28,17 +28,17 @@ The Docker image:
 From the project root:
 
 ```bash
-docker build -t python-template .
+docker build -t python-uv-template .
 ```
 
-This creates a Docker image named `python-template` (replace it with actual name).
+This creates a Docker image named `python-uv-template` (replace it with actual name).
 
 ---
 
 ## Run the Container
 
 ```bash
-docker run --rm -p 8501:8501 python-template
+docker run --rm -p 8501:8501 python-uv-template
 ```
 
 For a Streamlit app, this maps port 8501 from the container to the host. remove `-p 8501:8501` for non-Streamlit apps.
@@ -46,7 +46,7 @@ For a Streamlit app, this maps port 8501 from the container to the host. remove 
 This will start the application by executing:
 
 ```bash
-uv run streamlit run src/python_template/main.py --server.port=8501 --server.address=0.0.0.0
+uv run streamlit run src/app/main.py --server.port=8501 --server.address=0.0.0.0
 ```
 
 ---
@@ -76,7 +76,7 @@ Environment variables can be passed using:
 ```bash
 docker run --rm \
   -e ENVIRONMENT=production \
-  python-template
+  python-uv-template
 ```
 
 Or using an env file:
@@ -84,7 +84,7 @@ Or using an env file:
 ```bash
 docker run --rm \
   --env-file .env \
-  python-template
+  python-uv-template
 ```
 
 ---
@@ -98,7 +98,7 @@ In Windows PowerShell:
 ```powershell
 docker run --rm `
   -v ${PWD}/logs:/workspace/logs `
-  python-template
+  python-uv-template
 ```
 
 In Unix/Linux/macOS terminal:
@@ -106,7 +106,7 @@ In Unix/Linux/macOS terminal:
 ```bash
 docker run --rm \
   -v $(pwd)/logs:/workspace/logs \
-  python-template
+  python-uv-template
 ```
 
 Logs will be written to the local `logs/` folder.
@@ -133,7 +133,7 @@ If dependencies change:
 
 ```bash
 uv lock
-docker build -t python-template .
+docker build -t python-uv-template .
 ```
 
 ---

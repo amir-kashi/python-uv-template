@@ -3,9 +3,9 @@ import logging
 
 import streamlit as st
 
-from python_template.configs.config import DefaultConfig
-from python_template.core.logging import setup_logging
-from python_template.utils.helpers import adder
+from app.configs.config import DefaultConfig
+from app.core.logging import setup_logging
+from app.utils.helpers import adder
 
 # %% Configs and Settings
 setup_logging()

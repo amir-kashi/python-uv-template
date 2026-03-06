@@ -23,7 +23,7 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
-        args: ["src/python_template"]
+        args: ["src/app"]
         pass_filenames: false
         additional_dependencies: ["python-dotenv", "streamlit"]
 

@@ -3,9 +3,9 @@
 This project follows the modern **src-layout pattern**, which improves import reliability, testing, and packaging consistency.
 
 ```text
-python-template/   (sample file names)
+python-uv-template/   (sample file names)
 ├── src/
-│   └── python_template/         # Main Python package
+│   └── app/                     # Main Python package
 │       ├── __init__.py
 │       ├── main.py              # Application entry point
 │       │
@@ -54,7 +54,7 @@ python-template/   (sample file names)
 
 ## Directory and File Overview
 
-### `src/python_template/`
+### `src/app/`
 
 Contains the main application code.
 
@@ -66,7 +66,7 @@ Contains the main application code.
 This layout ensures clean imports such as:
 
 ```python
-from python_template.core.logic import my_function
+from app.core.logic import my_function
 or
 from .core.logic import my_function
 ```
@@ -103,7 +103,7 @@ Examples:
 Stores application log files.
 
 * Created automatically at runtime if not present
-* Controlled via `src/python_template/configs/logging_config.ini`
+* Controlled via `src/app/configs/logging_config.ini`
 * Should not be committed to Git (included in `.gitignore`)
 
 ---
