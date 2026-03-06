@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.git/
+.gitignore
+tests/
+logs/
+.env
+
+# NOTE: docs/ intentionally not ignored so that documentation
+# files can be copied into the Docker image for the Streamlit app.
