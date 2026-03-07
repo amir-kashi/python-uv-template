@@ -31,9 +31,8 @@ RUN mkdir -p logs
 ENV PYTHONPATH=/workspace/src
 
 # Default command
-# CMD ["uv", "run", "streamlit", "run", "src/app/main.py"]
 CMD ["uv", "run", "streamlit", "run", "src/app/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
-# OR:
+# OR (non Streamlit apps):
 # CMD ["/workspace/.venv/bin/python", "-m", "app.main"]
 
 # expose the streamlit port for documentation purposes
