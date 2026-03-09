@@ -1,4 +1,4 @@
-# Python UVTemplate
+# Python UV Template
 
 A modern Python project template with:
 
@@ -39,6 +39,7 @@ See `docs/` for:
 * [Pre commit Hooks](docs/04_pre_commit_hooks.md)
 * [Docker Deployment](docs/05_docker.md)
 * [CI/CD Setup](docs/06_cicd.md)
+* [Azure Setup](docs/07_azure_setup.md)
 
 ---
 
