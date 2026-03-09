@@ -3,6 +3,7 @@ import logging
 
 import streamlit as st
 
+import app
 from app.configs.config import DefaultConfig
 from app.core.logging import setup_logging
 from app.utils.helpers import adder
@@ -25,6 +26,8 @@ def main():
         "This is a sample Streamlit app to demonstrate "
         "the project structure and features."
     )
+
+    st.subheader(f"App Version: {app.__version__}")
 
     # Display project documentation
     st.header("Project Documentation")
