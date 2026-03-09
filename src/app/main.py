@@ -36,6 +36,7 @@ def main():
         "docs/04_pre_commit_hooks.md",
         "docs/05_docker.md",
         "docs/06_cicd.md",
+        "docs/07_azure_setup.md",
     ]
     for md in mds:
         logger.info(f"Loading markdown file: {md}")
