@@ -90,6 +90,6 @@ The following secrets must be configured in your GitHub repository (Settings →
 | `ACR_LOGIN_SERVER` | The login server URL of your Azure Container Registry (e.g. `myregistry.azurecr.io`). |
 | `ACR_USERNAME` | The username used to authenticate with ACR (e.g. the registry name or a service principal client ID). |
 | `ACR_PASSWORD` | The password or service principal client secret used to authenticate with ACR. |
-| `AZURE_CREDENTIALS` | A JSON object containing Azure service principal credentials used by `azure/login`. Create a service principal with `az ad sp create-for-rbac`, then manually construct the JSON with: `clientId`, `clientSecret`, `subscriptionId`, `tenantId`. **Note**: the `--sdk-auth` flag is deprecated. Alternatively, use federated credentials (OIDC) with `azure/login` for a secretless setup. |
+| `AZURE_CREDENTIALS` | A JSON object containing Azure service principal credentials used by `azure/login`. Create a service principal with `az ad sp create-for-rbac --name github-cd-sp --sdk-auth`, then manually construct the JSON with: `clientId`, `clientSecret`, `subscriptionId`, `tenantId`. **Note**: the `--sdk-auth` flag is deprecated. Alternatively, use federated credentials (OIDC) with `azure/login` for a secretless setup. |
 | `AZURE_WEBAPP_NAME` | The name of the Azure Web App to deploy to. |
 | `AZURE_RESOURCE_GROUP` | The Azure resource group that contains the Web App (used when restarting the app). |
