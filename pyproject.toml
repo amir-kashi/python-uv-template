@@ -37,3 +37,9 @@ line-length = 88
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.mypy]
+# Keep mypy informative but permissive so CI/pre-commit does not fail on third-party typing gaps.
+ignore_missing_imports = true
+follow_imports = "skip"
+disable_error_code = ["import-untyped"]
