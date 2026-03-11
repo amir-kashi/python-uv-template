@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-uv-template"
-version = "0.0.2"
+version = "0.1.0"
 description = "A Template for Python projects"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -33,6 +33,11 @@ dev = [
 # Tool configuration
 [tool.black]
 line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["src", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
