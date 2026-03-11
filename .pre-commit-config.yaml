@@ -8,16 +8,17 @@ repos:
         args: ["-r", "src", "tests", "--skip", "B101"]
         pass_filenames: false
 
+  - repo: https://github.com/PyCQA/isort
+    rev: 8.0.0
+    hooks:
+      - id: isort
+        args: ["--profile=black", "--filter-files"]
+
   - repo: https://github.com/psf/black
     rev: 26.1.0
     hooks:
       - id: black
         language_version: python3
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 8.0.0
-    hooks:
-      - id: isort
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
