@@ -43,6 +43,10 @@ src_paths = ["src", "tests"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
 [tool.mypy]
 # Keep mypy informative but permissive so CI/pre-commit does not fail on third-party typing gaps.
 ignore_missing_imports = true
