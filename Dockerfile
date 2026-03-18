@@ -30,10 +30,10 @@ RUN mkdir -p logs
 # Set Python path
 ENV PYTHONPATH=/workspace/src
 
-# Default command
+# Default command — overridden per service in docker-compose.yml
 CMD ["uv", "run", "streamlit", "run", "src/app/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
-# OR (non Streamlit apps):
-# CMD ["/workspace/.venv/bin/python", "-m", "app.main"]
 
-# expose the streamlit port for documentation purposes
+# Streamlit port
 EXPOSE 8501
+# FastAPI port
+EXPOSE 8000
