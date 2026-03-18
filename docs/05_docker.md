@@ -1,13 +1,18 @@
 # Docker
 
-This project includes a Dockerfile for building a reproducible, production-ready container image.
+This project uses one Docker image and Docker Compose to run two services:
 
-Docker ensures the application runs consistently across environments such as:
+- Streamlit UI on port 8501
+- FastAPI on port 8000
 
-- Local machines
-- Cloud platforms (Azure, AWS, GCP)
-- Kubernetes clusters
-- CI/CD pipelines
+This keeps one shared codebase and dependency set, while running each app as its own container process.
+
+---
+
+## Files Involved
+
+- `Dockerfile`: shared image definition
+- `docker-compose.yml`: orchestrates Streamlit and FastAPI services
 
 ---
 
@@ -15,133 +20,131 @@ Docker ensures the application runs consistently across environments such as:
 
 The Docker image:
 
-- Uses Python slim base image for smaller size
-- Installs dependencies using `uv`
-- Installs only production dependencies
-- Runs the application using the `src/` layout
-- Writes logs to the `/workspace/logs` directory
+- Uses `python:3.13-slim`
+- Installs dependencies with `uv sync --frozen --no-cache --no-dev`
+- Copies project source from `src/`
+- Sets `PYTHONPATH=/workspace/src`
+
+Compose then starts:
+
+- `streamlit` service with a Streamlit command on port 8501
+- `fastapi` service with Uvicorn (`app.api.main:app`) on port 8000
 
 ---
 
-## Build the Image
+## Prerequisites
 
-From the project root:
+Create `.env` from the example before starting Compose:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+---
+
+## Run Both Services (Recommended)
+
+From project root:
+
+```bash
+docker compose up --build
+```
+
+Access:
+
+- Streamlit UI: `http://localhost:8501`
+- FastAPI docs: `http://localhost:8000/docs`
+- FastAPI sample endpoint: `http://localhost:8000/hello`
+
+To stop:
+
+```bash
+docker compose down
+```
+
+---
+
+## Run a Single Service
+
+Streamlit only:
+
+```bash
+docker compose up --build streamlit
+```
+
+FastAPI only:
+
+```bash
+docker compose up --build fastapi
+```
+
+---
+
+## Logs And Volumes
+
+Both services mount local `./logs` into `/workspace/logs`:
+
+- Host logs remain available after container restart
+- Both apps can write to the same logs directory
+
+---
+
+## About Dockerfile CMD
+
+`Dockerfile` contains a default `CMD` for Streamlit.
+
+In Compose, each service defines its own `command`, so that default `CMD` is overridden and not used.
+
+Keeping a default `CMD` is optional and mainly useful for direct `docker run` usage.
+
+---
+
+## Optional: Run Image Directly (Without Compose)
+
+Build image:
 
 ```bash
 docker build -t python-uv-template .
 ```
 
-This creates a Docker image named `python-uv-template` (replace it with actual name).
-
----
-
-## Run the Container
+Run Streamlit from image default:
 
 ```bash
-docker run --rm -p 8501:8501 python-uv-template
+docker run --rm -p 8501:8501 --env-file .env python-uv-template
 ```
 
-For a Streamlit app, this maps port 8501 from the container to the host. remove `-p 8501:8501` for non-Streamlit apps.
-
-This will start the application by executing:
+Run FastAPI by overriding command:
 
 ```bash
-uv run streamlit run src/app/main.py --server.port=8501 --server.address=0.0.0.0
+docker run --rm -p 8000:8000 --env-file .env python-uv-template \
+  uv run uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 ---
 
-## Why Install Only Production Dependencies?
-
-This line ensures only runtime dependencies are installed:
-
-```dockerfile
-RUN uv sync --no-dev
-```
-
-This improves:
-
-* Image size
-* Security
-* Startup speed
-
-Development tools such as pytest, black, and pre-commit are excluded.
-
----
-
-## Environment Variables
-
-Environment variables can be passed using:
-
-```bash
-docker run --rm \
-  -e ENVIRONMENT=production \
-  python-uv-template
-```
-
-Or using an env file:
-
-```bash
-docker run --rm \
-  --env-file .env \
-  python-uv-template
-```
-
----
-
-## Run with Mounted Logs (Recommended)
-
-To persist logs outside the container:
-
-In Windows PowerShell:
-
-```powershell
-docker run --rm `
-  -v ${PWD}/logs:/workspace/logs `
-  python-uv-template
-```
-
-In Unix/Linux/macOS terminal:
-
-```bash
-docker run --rm \
-  -v $(pwd)/logs:/workspace/logs \
-  python-uv-template
-```
-
-Logs will be written to the local `logs/` folder.
-
----
-
-## Using in Cloud Environments
-
-This Docker image can be deployed to:
-
-* Azure Web App for Containers
-* Azure Container Apps
-* AWS ECS
-* AWS Fargate
-* Kubernetes
-
-The container is self-contained and ready for production use.
-
----
-
-## Rebuilding After Dependency Changes
+## Rebuild After Dependency Changes
 
 If dependencies change:
 
 ```bash
 uv lock
-docker build -t python-uv-template .
+docker compose build --no-cache
+docker compose up
 ```
 
 ---
 
-## Best Practices
+## Common Issues
 
-* Always use `--no-dev` in Docker builds
-* Do not include tests in production images
-* Do not include `.venv`
-* Use `.dockerignore` to exclude unnecessary files
-* Mount logs externally when possible
+- `docker compose up --build` fails because `.env` is missing:
+  - Create `.env` from `.env.example`
+- One port is already in use:
+  - Free the port or change host-side mapping in `docker-compose.yml`
+- Code changes not reflected:
+  - Rebuild with `docker compose up --build`

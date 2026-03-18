@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-uv-template"
-version = "0.1.1"
+version = "0.2.0"
 description = "A Template for Python projects"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,8 +12,10 @@ authors = [
     { name = "Amir T. Kashi", email = "amirtkashi@gmail.com" },
 ]
 dependencies = [
+    "fastapi>=0.135.1",
     "python-dotenv",
     "streamlit>=1.55.0",
+    "uvicorn[standard]>=0.42.0",
 ]
 
 [dependency-groups]
