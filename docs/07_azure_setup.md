@@ -194,17 +194,20 @@ DOCKER_REGISTRY_SERVER_URL
 You may also add custom variables, for example:
 
 ```
-WEBSITES_PORT=8000
+WEBSITES_PORT=8501
 ENVIRONMENT=production
 ```
 
 `WEBSITES_PORT` must match the port your container listens on.
 
+For this template's default Streamlit container command, use `8501`.
+If you deploy the FastAPI service instead, set `WEBSITES_PORT=8000`.
+
 ---
 
 # 7. Verify Container Deployment
 
-Before deployment, ensure the required GitHub repository secrets are configured, especially the ACR and Azure secrets listed under **CD Secrets** in [CI/CD](06_cicd.md) setup. 
+Before deployment, ensure the required GitHub repository secrets are configured, especially the ACR and Azure secrets listed under **CD Secrets** in [CI/CD](06_cicd.md) setup.
 
 Once a container image exists in ACR:
 
