@@ -86,7 +86,9 @@ jobs:
         run: uv run bandit -r src/ -f json -o bandit-report.json
 
       - name: Check dependencies with Safety
-        run: uv run safety check --json
+        run: uv run safety scan --json
+        env:
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
 
   test:
     name: Unit Tests
