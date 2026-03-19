@@ -13,7 +13,7 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'main'
       }}
-    name: Build & Push Docker Image to ACR
+    name: Build & Push Docker Images to ACR
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -40,16 +40,29 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build and push Docker image to ACR
+      - name: Build and push Streamlit image to ACR
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile.streamlit
           push: true
           tags: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-${{ github.event.workflow_run.head_branch }}:latest
-            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-${{ github.event.workflow_run.head_branch }}:${{ steps.version.outputs.version }}
-          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-${{ github.event.workflow_run.head_branch }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-${{ github.event.workflow_run.head_branch }}:buildcache,mode=max
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-streamlit-${{ github.event.workflow_run.head_branch }}:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-streamlit-${{ github.event.workflow_run.head_branch }}:${{ steps.version.outputs.version }}
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-streamlit-${{ github.event.workflow_run.head_branch }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-streamlit-${{ github.event.workflow_run.head_branch }}:buildcache,mode=max
+
+      - name: Build and push FastAPI image to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.fastapi
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-fastapi-${{ github.event.workflow_run.head_branch }}:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-fastapi-${{ github.event.workflow_run.head_branch }}:${{ steps.version.outputs.version }}
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-fastapi-${{ github.event.workflow_run.head_branch }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-fastapi-${{ github.event.workflow_run.head_branch }}:buildcache,mode=max
 
   deploy:
     name: Deploy to Production
@@ -63,19 +76,48 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Web App
-        id: deploy
+      - name: Deploy Streamlit image to Azure Web App
+        id: deploy_streamlit
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-${{ github.event.workflow_run.head_branch }}:${{ needs.build-docker.outputs.version }}
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_STREAMLIT }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-streamlit-${{ github.event.workflow_run.head_branch }}:${{ needs.build-docker.outputs.version }}
 
-      - name: Restart Web App
+      - name: Configure Streamlit Web App settings
+        run: |
+          az webapp config appsettings set \
+            --name ${{ secrets.AZURE_WEBAPP_NAME_STREAMLIT }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --settings WEBSITES_PORT=8501 WEBSITES_CONTAINER_START_TIME_LIMIT=600
+
+      - name: Restart Streamlit Web App
         run: |
           az webapp restart \
-            --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+            --name ${{ secrets.AZURE_WEBAPP_NAME_STREAMLIT }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}
+
+      - name: Deploy FastAPI image to Azure Web App
+        id: deploy_fastapi
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_FASTAPI }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.event.repository.name }}-fastapi-${{ github.event.workflow_run.head_branch }}:${{ needs.build-docker.outputs.version }}
+
+      - name: Configure FastAPI Web App settings
+        run: |
+          az webapp config appsettings set \
+            --name ${{ secrets.AZURE_WEBAPP_NAME_FASTAPI }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --settings WEBSITES_PORT=8000 WEBSITES_CONTAINER_START_TIME_LIMIT=600
+
+      - name: Restart FastAPI Web App
+        run: |
+          az webapp restart \
+            --name ${{ secrets.AZURE_WEBAPP_NAME_FASTAPI }} \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}
 
       - name: Output deployment info
         id: deploy_info
-        run: echo "url=https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+        run: |
+          echo "streamlit_url=https://${{ secrets.AZURE_WEBAPP_NAME_STREAMLIT }}.azurewebsites.net"
+          echo "fastapi_url=https://${{ secrets.AZURE_WEBAPP_NAME_FASTAPI }}.azurewebsites.net"

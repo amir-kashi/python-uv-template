@@ -56,22 +56,23 @@ Source: [.github/workflows/cd.yaml](../.github/workflows/cd.yaml)
 
 Summary:
 - Triggers: automatically after the **CI Pipeline** workflow completes successfully on the `main` branch (`workflow_run` event).
-- Deploys to Azure App Service using an image pushed to Azure Container Registry (ACR).
+- Deploys to Azure App Service using two images pushed to Azure Container Registry (ACR): one for Streamlit and one for FastAPI.
 
 Jobs:
 
-- **build-docker** — Build & push Docker image to ACR
+- **build-docker** — Build & push Docker images to ACR
 	- Extracts the version from `pyproject.toml`.
 	- Sets up Docker Buildx and logs in to ACR using repository secrets.
-	- Builds and pushes the image with two tags: `latest` and the extracted version number.
-	- Uses ACR-based build cache (`buildcache` tag) to speed up subsequent builds.
+	- Builds and pushes two images (`Dockerfile.streamlit` and `Dockerfile.fastapi`) with two tags each: `latest` and the extracted version number.
+	- Uses ACR-based build cache (`buildcache` tag) for each image to speed up subsequent builds.
 
 - **deploy** — Deploy to production
 	- Depends on: `build-docker`.
 	- Runs in the `production` GitHub environment (can be configured with required reviewers/protection rules).
 	- Logs in to Azure using a service principal credential secret.
-	- Deploys the versioned Docker image to Azure Web App using `azure/webapps-deploy`.
-	- Restarts the Web App after deployment.
+	- Deploys the versioned Streamlit image to the Streamlit Web App and FastAPI image to the FastAPI Web App using `azure/webapps-deploy`.
+	- Sets app settings per Web App, including `WEBSITES_PORT`.
+	- Restarts both Web Apps after deployment.
 
 ## Required GitHub Secrets
 
@@ -91,5 +92,6 @@ The following secrets must be configured in your GitHub repository (Settings →
 | `ACR_USERNAME` | The username used to authenticate with ACR (e.g. the registry name or a service principal client ID). |
 | `ACR_PASSWORD` | The password or service principal client secret used to authenticate with ACR. |
 | `AZURE_CREDENTIALS` | A JSON object containing Azure service principal credentials used by `azure/login`. Create a service principal with `az ad sp create-for-rbac --name github-cd-sp --sdk-auth`, then manually construct the JSON with: `clientId`, `clientSecret`, `subscriptionId`, `tenantId`. **Note**: the `--sdk-auth` flag is deprecated. Alternatively, use federated credentials (OIDC) with `azure/login` for a secretless setup. |
-| `AZURE_WEBAPP_NAME` | The name of the Azure Web App to deploy to. |
+| `AZURE_WEBAPP_NAME_STREAMLIT` | The name of the Azure Web App used for the Streamlit UI container. |
+| `AZURE_WEBAPP_NAME_FASTAPI` | The name of the Azure Web App used for the FastAPI container. |
 | `AZURE_RESOURCE_GROUP` | The Azure resource group that contains the Web App (used when restarting the app). |

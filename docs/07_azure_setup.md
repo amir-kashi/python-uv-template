@@ -3,10 +3,10 @@
 This guide explains how to set up the Azure infrastructure required to deploy a containerized application via CI/CD. The architecture consists of:
 
 - **Azure Container Registry (ACR)** – to store Docker images
-- **Azure Web App for Containers** – to run the containerized application
-- **Managed Identity + RBAC** – to allow the Web App to securely pull images from ACR
+- **Two Azure Web Apps for Containers** – one for Streamlit UI and one for FastAPI API
+- **Managed Identity + RBAC** – to allow each Web App to securely pull images from ACR
 
-This setup works well with CI/CD pipelines (e.g., GitHub Actions) that build and push Docker images to ACR and then deploy them to the Web App.
+This setup works well with CI/CD pipelines (e.g., GitHub Actions) that build and push Docker images to ACR and then deploy them to two Web Apps.
 
 ---
 
@@ -16,16 +16,13 @@ This setup works well with CI/CD pipelines (e.g., GitHub Actions) that build and
 
 GitHub CI/CD
 │
-│  push Docker image
+│  push Docker images
 ▼
 Azure Container Registry (ACR)
 │
-│  pull image
-▼
-Azure Web App for Containers
+├── pull Streamlit image ──► Azure Web App (Streamlit)
 │
-▼
-Public HTTPS Endpoint
+└── pull FastAPI image ─────► Azure Web App (FastAPI)
 
 ```
 
@@ -82,9 +79,10 @@ Password
 
 ---
 
-# 2. Create Web App for Containers
+# 2. Create Two Web Apps for Containers
 
 Azure Web App for Containers runs Docker containers without needing Kubernetes.
+Create one Web App for Streamlit and one Web App for FastAPI.
 
 ### Steps
 
@@ -119,7 +117,7 @@ Avoid **Free tier** for containers.
 
 # 3. Configure Container Settings
 
-During Web App creation, configure the container source.
+During each Web App creation, configure the container source.
 
 Choose:
 
@@ -127,16 +125,16 @@ Choose:
 |------|------|
 | Image Source | Azure Container Registry |
 | Registry | Select your ACR |
-| Image | Your repository name |
+| Image | Streamlit image for Streamlit app, FastAPI image for FastAPI app |
 | Tag | `latest` (can be updated via CI/CD later) |
 
 Complete the creation.
 
 ---
 
-# 4. Enable Managed Identity for Web App
+# 4. Enable Managed Identity for Both Web Apps
 
-Instead of storing registry credentials in the Web App, use **Managed Identity**.
+Instead of storing registry credentials in each Web App, use **Managed Identity**.
 
 ### Enable Identity
 
@@ -146,12 +144,13 @@ Instead of storing registry credentials in the Web App, use **Managed Identity**
 4. Click **Save**
 
 Azure will create a managed identity for the application.
+Repeat for both Web Apps.
 
 ---
 
-# 5. Grant Web App Permission to Pull Images
+# 5. Grant Both Web Apps Permission to Pull Images
 
-Now grant the Web App permission to pull images from ACR.
+Now grant each Web App permission to pull images from ACR.
 
 ### Steps
 
@@ -165,17 +164,17 @@ Configure:
 |------|------|
 | Role | **AcrPull** |
 | Assign access to | Managed Identity |
-| Identity | Select your Web App |
+| Identity | Select each Web App (Streamlit and FastAPI) |
 
 Click **Save**.
 
-Now the Web App can securely pull images from ACR.
+Now both Web Apps can securely pull images from ACR.
 
 ---
 
 # 6. Configure Application Settings
 
-Your container may require environment variables.
+Each container may require environment variables.
 
 Open:
 
@@ -191,17 +190,21 @@ DOCKER_REGISTRY_SERVER_USERNAME
 DOCKER_REGISTRY_SERVER_URL
 ```
 
-You may also add custom variables, for example:
+For the Streamlit Web App, set:
 
 ```
 WEBSITES_PORT=8501
 ENVIRONMENT=production
 ```
 
-`WEBSITES_PORT` must match the port your container listens on.
+For the FastAPI Web App, set:
 
-For this template's default Streamlit container command, use `8501`.
-If you deploy the FastAPI service instead, set `WEBSITES_PORT=8000`.
+```
+WEBSITES_PORT=8000
+ENVIRONMENT=production
+```
+
+`WEBSITES_PORT` must match the port each container listens on.
 
 ---
 
@@ -209,17 +212,22 @@ If you deploy the FastAPI service instead, set `WEBSITES_PORT=8000`.
 
 Before deployment, ensure the required GitHub repository secrets are configured, especially the ACR and Azure secrets listed under **CD Secrets** in [CI/CD](06_cicd.md) setup.
 
-Once a container image exists in ACR:
+Once container images exist in ACR:
 
-1. Go to **Web App**
+1. Go to **Streamlit Web App**
 2. Navigate to **Deployment Center**
-3. Confirm container image and tag
-4. Restart the Web App
+3. Confirm Streamlit image and tag
+4. Restart the Streamlit Web App
+5. Repeat for the **FastAPI Web App**
 
 Then open:
 
 ```
-https://<web-app-name>.azurewebsites.net
+https://<streamlit-web-app-name>.azurewebsites.net
+
+and
+
+https://<fastapi-web-app-name>.azurewebsites.net
 ```
 
 If the application loads, the infrastructure is correctly configured.
@@ -233,8 +241,9 @@ Your Azure resources should look like:
 ```
 Resource Group
 ├── Container Registry (ACR)
-└── App Service
-└── Web App (Linux Container)
+├── App Service Plan
+├── Web App (Linux Container - Streamlit)
+└── Web App (Linux Container - FastAPI)
 ```
 
-The Web App pulls images from ACR using Managed Identity and serves the application over HTTPS.
+Both Web Apps pull images from ACR using Managed Identity and serve the application over HTTPS.
