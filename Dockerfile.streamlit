@@ -1,0 +1,23 @@
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN pip install --no-cache-dir uv
+
+WORKDIR /workspace
+
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-cache --no-dev
+
+COPY src ./src
+COPY README.md ./
+COPY docs ./docs
+
+RUN mkdir -p logs
+
+ENV PYTHONPATH=/workspace/src
+
+CMD ["uv", "run", "streamlit", "run", "src/app/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+EXPOSE 8501
