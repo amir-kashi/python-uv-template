@@ -1,34 +1,35 @@
 # Docker
 
-This project uses one Docker image and Docker Compose to run two services:
+This project uses two Docker images and Docker Compose to run two services:
 
 - Streamlit UI on port 8501
 - FastAPI on port 8000
 
-This keeps one shared codebase and dependency set, while running each app as its own container process.
+This keeps one shared codebase while allowing independent startup commands and deployment images.
 
 ---
 
 ## Files Involved
 
-- `Dockerfile`: shared image definition
-- `docker-compose.yml`: orchestrates Streamlit and FastAPI services
+- `Dockerfile.streamlit`: image definition for Streamlit UI
+- `Dockerfile.fastapi`: image definition for FastAPI
+- `docker-compose.yml`: orchestrates both services locally
 
 ---
 
 ## Overview
 
-The Docker image:
+Both images:
 
-- Uses `python:3.13-slim`
-- Installs dependencies with `uv sync --frozen --no-cache --no-dev`
-- Copies project source from `src/`
-- Sets `PYTHONPATH=/workspace/src`
+- Use `python:3.13-slim`
+- Install dependencies with `uv sync --frozen --no-cache --no-dev`
+- Copy project source from `src/`
+- Set `PYTHONPATH=/workspace/src`
 
-Compose then starts:
+Service startup commands:
 
-- `streamlit` service with a Streamlit command on port 8501
-- `fastapi` service with Uvicorn (`app.api.main:app`) on port 8000
+- Streamlit: `uv run streamlit run src/app/main.py --server.port=8501 --server.address=0.0.0.0`
+- FastAPI: `uv run uvicorn app.api.api:fastapi_app --host 0.0.0.0 --port 8000`
 
 ---
 
@@ -95,35 +96,25 @@ Both services mount local `./logs` into `/workspace/logs`:
 
 ---
 
-## About Dockerfile CMD
+## Optional: Run Images Directly (Without Compose)
 
-`Dockerfile` contains a default `CMD` for Streamlit.
-
-In Compose, each service defines its own `command`, so that default `CMD` is overridden and not used.
-
-Keeping a default `CMD` is optional and mainly useful for direct `docker run` usage.
-
----
-
-## Optional: Run Image Directly (Without Compose)
-
-Build image:
+Build images:
 
 ```bash
-docker build -t python-uv-template .
+docker build -f Dockerfile.streamlit -t python-uv-template-streamlit .
+docker build -f Dockerfile.fastapi -t python-uv-template-fastapi .
 ```
 
-Run Streamlit from image default:
+Run Streamlit image:
 
 ```bash
-docker run --rm -p 8501:8501 --env-file .env python-uv-template
+docker run --rm -p 8501:8501 --env-file .env python-uv-template-streamlit
 ```
 
-Run FastAPI by overriding command:
+Run FastAPI image:
 
 ```bash
-docker run --rm -p 8000:8000 --env-file .env python-uv-template \
-  uv run uvicorn app.api.main:app --host 0.0.0.0 --port 8000
+docker run --rm -p 8000:8000 --env-file .env python-uv-template-fastapi
 ```
 
 ---
