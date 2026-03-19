@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-uv-template"
-version = "0.2.1"
+version = "0.2.2"
 description = "A Template for Python projects"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "Amir T. Kashi", email = "amirtkashi@gmail.com" },
 ]
