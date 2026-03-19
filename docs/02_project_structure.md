@@ -36,7 +36,8 @@ python-uv-template/   (sample file names)
 │   ├── dependencies.md
 │   └── architecture.md
 │
-├── Dockerfile                   # Container definition for production deployment
+├── Dockerfile.streamlit         # Container definition for Streamlit UI service
+├── Dockerfile.fastapi           # Container definition for FastAPI service
 ├── .dockerignore                # Files excluded from Docker build
 │
 ├── pyproject.toml               # Project metadata and dependencies
@@ -121,15 +122,15 @@ Examples:
 
 ---
 
-### `Dockerfile`
+### `Dockerfile.streamlit` and `Dockerfile.fastapi`
 
-Defines the containerized runtime environment.
+Define the containerized runtime environments for each service.
 
 Used to:
 
-* Build production-ready images
-* Ensure consistent environments across systems
-* Deploy to cloud platforms such as Azure, AWS, or Kubernetes
+* Build service-specific production-ready images
+* Keep Streamlit and FastAPI startup commands isolated and explicit
+* Deploy each service independently to cloud platforms such as Azure
 
 See `docs/docker.md` for usage instructions.
 
