@@ -8,7 +8,7 @@ Source: [.github/workflows/ci.yaml](../.github/workflows/ci.yaml)
 
 Summary:
 - Triggers: `push` and `pull_request` on `main` and `develop`, and `workflow_dispatch`.
-- Environment: uses `PYTHON_VERSION` (default `3.13`) and matrix for tests (3.10–3.13).
+- Environment: uses `PYTHON_VERSION` (default `3.13`) and a test matrix for Python 3.11, 3.12, and 3.13.
 
 Jobs:
 
@@ -21,9 +21,10 @@ Jobs:
 
 - **security-scan** — Security checks
 	- Runs `bandit` (outputs `bandit-report.json`) and `safety` (dependency checks).
+	- Passes `SAFETY_API_KEY` from GitHub Actions secrets to the Safety step via job environment variables.
 
 - **test** — Unit tests
-	- Matrix across Python 3.10, 3.11, 3.12, 3.13.
+	- Matrix across Python 3.11, 3.12, 3.13.
 	- Runs `pytest`, generates coverage XML, and uploads to Codecov (token not configured by default).
 
 - **all-checks-passed** — Gate job
@@ -45,7 +46,8 @@ uv run mypy src/
 uv run ruff check src/ tests/
 uv run black --check src/ tests/
 uv run bandit -r src/ -f json -o bandit-report.json
-uv run safety check --json
+export SAFETY_API_KEY="your-safety-api-key"
+uv run safety scan --json
 uv run pytest tests/ -v --tb=short
 uv run pytest tests/ --cov=src/ --cov-report=xml --cov-report=term
 ```
@@ -78,10 +80,11 @@ Jobs:
 
 The following secrets must be configured in your GitHub repository (Settings → Secrets and variables → Actions) before the workflows will run correctly.
 
-### CI Secrets (optional)
+### CI Secrets
 
 | Secret | Description |
 |--------|-------------|
+| `SAFETY_API_KEY` | Required for the `security-scan` job. Add this repository secret in GitHub under Settings → Secrets and variables → Actions so the Safety step can authenticate when running `uv run safety scan --json`. |
 | `CODECOV_TOKEN` | Token for authenticated Codecov uploads. The CI workflow includes the upload step but the token is commented out by default. Add this secret and uncomment the `token` line in `ci.yaml` if you want authenticated uploads or need to enforce upload failures. |
 
 ### CD Secrets (required)
@@ -91,7 +94,7 @@ The following secrets must be configured in your GitHub repository (Settings →
 | `ACR_LOGIN_SERVER` | The login server URL of your Azure Container Registry (e.g. `myregistry.azurecr.io`). |
 | `ACR_USERNAME` | The username used to authenticate with ACR (e.g. the registry name or a service principal client ID). |
 | `ACR_PASSWORD` | The password or service principal client secret used to authenticate with ACR. |
+| `AZURE_RESOURCE_GROUP` | The Azure resource group that contains the Web App (used when restarting the app). |
 | `AZURE_CREDENTIALS` | A JSON object containing Azure service principal credentials used by `azure/login`. Create a service principal with `az ad sp create-for-rbac --name github-cd-sp --sdk-auth`, then manually construct the JSON with: `clientId`, `clientSecret`, `subscriptionId`, `tenantId`. **Note**: the `--sdk-auth` flag is deprecated. Alternatively, use federated credentials (OIDC) with `azure/login` for a secretless setup. |
 | `AZURE_WEBAPP_NAME_STREAMLIT` | The name of the Azure Web App used for the Streamlit UI container. |
 | `AZURE_WEBAPP_NAME_FASTAPI` | The name of the Azure Web App used for the FastAPI container. |
-| `AZURE_RESOURCE_GROUP` | The Azure resource group that contains the Web App (used when restarting the app). |

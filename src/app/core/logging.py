@@ -1,8 +1,12 @@
+import logging
 from logging.config import fileConfig
 from pathlib import Path
 
 
-def setup_logging():
+def setup_logging(level=logging.INFO):
     base_dir = Path(__file__).resolve().parents[1]  # go to app/
     config_path = base_dir / "configs" / "logging_config.ini"
     fileConfig(config_path, disable_existing_loggers=False)
+
+    # Set root logger level
+    logging.getLogger().setLevel(level)
