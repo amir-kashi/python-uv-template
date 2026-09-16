@@ -170,9 +170,39 @@ Click **Save**.
 
 Now both Web Apps can securely pull images from ACR.
 
+**Important:** Granting the `AcrPull` role does not by itself switch how the Web App authenticates to the registry — you must also explicitly set the registry authentication method, otherwise the Web App keeps trying to pull with admin credentials and fails. Continue to the next step before restarting the app.
+
 ---
 
-# 6. Configure Application Settings
+# 6. Set Registry Authentication to Managed Identity
+
+By default, a Web App for Containers authenticates to ACR using **admin username/password**, even after you've enabled a system-assigned identity and granted it `AcrPull`. If this setting is left on admin credentials, image pulls fail with `Image pull failed with forbidden or unauthorized`, because no admin credentials are configured (ACR admin access is disabled per step 1).
+
+### Steps
+
+1. Open the **Web App**
+2. Go to **Settings → Deployment Center** (container settings may also appear directly under **Settings → Container settings**, depending on portal version)
+3. Under **Registry settings / Authentication**, change the authentication type from **Admin credentials** to **Managed Identity**
+4. Select **System-assigned identity**
+5. Click **Save**, then **Restart** the Web App
+
+Repeat for both Web Apps.
+
+Equivalent via CLI:
+
+```
+az webapp config container set \
+  --name <app-name> \
+  --resource-group <rg-name> \
+  --docker-registry-server-url https://<registry-name>.azurecr.io \
+  --enable-managed-identity
+```
+
+(Flag name may vary slightly by `az cli` version — if it's unavailable, use the Portal steps above.)
+
+---
+
+# 7. Configure Application Settings
 
 Each container may require environment variables.
 
@@ -182,13 +212,7 @@ Open:
 Web App → Settings → Environment Variables
 ```
 
-You may notice that these variables are injected as environment variables into the container at runtime:
-
-```
-DOCKER_REGISTRY_SERVER_PASSWORD
-DOCKER_REGISTRY_SERVER_USERNAME
-DOCKER_REGISTRY_SERVER_URL
-```
+**Note:** `DOCKER_REGISTRY_SERVER_PASSWORD`, `DOCKER_REGISTRY_SERVER_USERNAME`, and `DOCKER_REGISTRY_SERVER_URL` are only injected automatically when the Web App authenticates to ACR using **admin credentials**. Since this guide uses Managed Identity (step 6) instead, these variables will **not** appear — that's expected, not a misconfiguration.
 
 For the Streamlit Web App, set:
 
@@ -208,7 +232,7 @@ ENVIRONMENT=production
 
 ---
 
-# 7. Verify Container Deployment
+# 8. Verify Container Deployment
 
 Before deployment, ensure the required GitHub repository secrets are configured, especially the ACR and Azure secrets listed under **CD Secrets** in [CI/CD](06_cicd.md) setup.
 
